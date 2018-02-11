@@ -19,7 +19,7 @@ LOG_FREQUENCY = 1000                # How often to log results.
 BN_MOMENTUM = 0.9                   # Decay rate for batch normalization.
 SHORTCUT_L2_SCALE = 0.0001          # Regularization for the skip connections. 
 DEPTH = 2                           # Residual units per stack. 
-WIDEN_FACTOR = 4                    # Scale up the number of feature maps.
+WIDEN_FACTOR = 1                    # Scale up the number of feature maps.
 
 # Constants describing the input pipeline. 
 SHUFFLE_BUFFER = 50000              # Buffer size for the shuffled dataset.
@@ -29,7 +29,7 @@ TRAIN_OUTPUT_BUFFER = SHUFFLE_BUFFER//BATCH_SIZE # Train buffer size.
 VALIDATION_OUTPUT_BUFFER = 6        # Buffer size for validation dataset.
 
 # Data directory. 
-DATA_DIR = r'C:\Users\sean\Desktop\ml\datasets\cifar10'
+DATA_DIR = r'/home/sean/Desktop/ml/datasets/cifar10'
 
 # Directory where to write event logs and checkpoint.
 TRAIN_DIR = r'train'

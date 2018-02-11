@@ -30,3 +30,4 @@ plt.annotate(
 plt.suptitle("Best Step: {}".format(best_test_step))
 plot_path = os.path.join(params.TRAIN_DIR, "plot.png")
 plt.savefig(plot_path)
+
