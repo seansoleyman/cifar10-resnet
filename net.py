@@ -1,10 +1,10 @@
-"""Build the CIFAR-10 ResNet"""
+"""Build the CIFAR-10 ResNet."""
 
 import tensorflow as tf
 
 import params
 
-"""Adds two sets of BN->relu->conv layers, as well as a shortcut. """
+"""Create two sets of BN->relu->conv layers, as well as a shortcut. """
 def _residual_block(inputs, filters, training, stride=1):
     bn1 = tf.layers.batch_normalization(
         inputs, 
@@ -49,7 +49,7 @@ def _residual_block(inputs, filters, training, stride=1):
     return tf.add(shortcut, conv2, name='add')
 
 def inference(images, training):
-    """Builds a ResNet for CIFAR-10.
+    """Build a ResNet for CIFAR-10.
 
     Args:
         images: Input for the network. 
@@ -62,17 +62,10 @@ def inference(images, training):
     """
 
     with tf.variable_scope('inference_model'):
-        # Normalize inputs. 
-        bn1 = tf.layers.batch_normalization(
-            images, 
-            momentum=params.BN_MOMENTUM, 
-            training=training, 
-            fused=True, 
-            name='bn1')
     
         # Construct the first convolutional layer with no activation. 
         conv1 = tf.layers.conv2d(
-            bn1, 
+            images, 
             filters=16 * params.WIDEN_FACTOR, 
             kernel_size=3, 
             padding='same', 
