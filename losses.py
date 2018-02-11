@@ -9,10 +9,11 @@ def total_loss(logits, labels):
             labels=labels, logits=logits, name='cross_entropy_per_example')
         cross_entropy_mean = tf.reduce_mean(cross_entropy, name='cross_entropy')
       
-        # The total loss is defined as the cross entropy loss plus all of the weight
-        # decay terms (L2 loss).
+        # The total loss is defined as the cross entropy loss plus all of the 
+        # weight decay terms (L2 loss).
         reg_losses = tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES)
-        total_loss = tf.add_n([cross_entropy_mean] + reg_losses, name='total_loss')
+        total_loss = tf.add_n(
+            [cross_entropy_mean] + reg_losses, name='total_loss')
         
         # Add summaries: regularization losses, cross entropy mean, total loss. 
         for l in reg_losses + [cross_entropy_mean] + [total_loss]:

@@ -7,7 +7,7 @@ import tensorflow as tf
 
 import params
 import net
-import cifar10_data
+import data
 import losses
 
 import csv
@@ -51,14 +51,8 @@ def create_train_op(total_loss, global_step):
             if grad is not None:
                 tf.summary.histogram(var.op.name + '/gradients', grad)
     
-        # Track the moving averages of all trainable variables.
-        variable_averages = tf.train.ExponentialMovingAverage(
-                params.MOVING_AVERAGE_DECAY, global_step)
-        variables_averages_op = variable_averages.apply(
-                tf.trainable_variables())
-    
         with tf.control_dependencies(
-                [apply_gradient_op] + extra_update_ops + [variables_averages_op]):
+                [apply_gradient_op] + extra_update_ops):
             train_op = tf.no_op(name='train')
     
     return train_op
@@ -67,11 +61,11 @@ def create_train_op(total_loss, global_step):
 def train():
     """Train CIFAR-10 for a number of steps."""
     
-    with tf.name_scope('input'):
-        global_step = tf.contrib.framework.get_or_create_global_step()
+    with tf.device('/cpu:0'), tf.name_scope('input'):
+        global_step = tf.train.get_or_create_global_step()
     
         print("Loading CIFAR-10 Data")
-        cifar10 = cifar10_data.Cifar10()
+        cifar10 = data.Cifar10()
       
         images_placeholder = tf.placeholder(
                 cifar10.train_images.dtype, 
@@ -87,25 +81,27 @@ def train():
         test_data_dict = {images_placeholder: cifar10.test_images, 
                           labels_placeholder: cifar10.test_labels}
       
-        training_dataset = tf.contrib.data.Dataset.from_tensor_slices(
+        training_dataset = tf.data.Dataset.from_tensor_slices(
                 (images_placeholder, labels_placeholder))
+        training_dataset = training_dataset.prefetch(params.SHUFFLE_BUFFER)
         training_dataset = training_dataset.map(
-                cifar10_data.randomization_function, 
-                num_threads=params.NUM_THREADS, 
-                output_buffer_size=params.OUTPUT_BUFFER_SIZE)
+                data.randomization_function, 
+                num_parallel_calls=params.NUM_THREADS)
         training_dataset = training_dataset.shuffle(
-                buffer_size=params.TRAIN_BUFFER_SIZE)
+                buffer_size=params.SHUFFLE_BUFFER)
         training_dataset = training_dataset.batch(params.BATCH_SIZE)
         training_dataset = training_dataset.repeat()
+        training_dataset = training_dataset.prefetch(params.TRAIN_OUTPUT_BUFFER)
       
-        validation_dataset = tf.contrib.data.Dataset.from_tensor_slices(
+        validation_dataset = tf.data.Dataset.from_tensor_slices(
                 (images_placeholder, labels_placeholder))
         validation_dataset = validation_dataset.map(
-                cifar10_data.standardization_function, 
-                num_threads=params.NUM_THREADS, 
-                output_buffer_size=params.OUTPUT_BUFFER_SIZE)
+                data.standardization_function, 
+                num_parallel_calls=params.NUM_THREADS)
         validation_dataset = validation_dataset.batch(
                 params.BATCH_SIZE)
+        validation_dataset = validation_dataset.prefetch(
+            params.VALIDATION_OUTPUT_BUFFER)
       
         iterator = tf.contrib.data.Iterator.from_structure(
                 training_dataset.output_types, training_dataset.output_shapes)
@@ -153,16 +149,13 @@ def train():
         while global_step.eval() < params.TRAIN_STEPS:
             # Run a number of training steps set by params.LOG_FREQUENCY
             training_init_op.run(feed_dict=(train_data_dict))
-            total_batch_loss = 0.0
             start_time = time.perf_counter()
             for _ in range(0,params.LOG_FREQUENCY):
                 batch_loss, summary_str = sess.run(
                         [train_op, total_loss, merged_summary], 
                         feed_dict={training_placeholder: True})[1:]
-                total_batch_loss += batch_loss
             end_time = time.perf_counter()
             average_time_per_step = (end_time-start_time)/params.LOG_FREQUENCY
-            average_batch_loss = total_batch_loss/params.LOG_FREQUENCY
             
             # Write a summary of the last training batch for TensorBoard
             tf_file_writer.add_summary(summary_str, global_step.eval())
@@ -186,7 +179,6 @@ def train():
             test_error_rate = 1.0-total_correct/params.NUM_TEST_EXAMPLES
             
             print("Step:", global_step.eval())
-            print("  Average Training Batch Loss:", average_batch_loss)
             print("  Train Set Error Rate:", train_error_rate)
             print("  Test Set Error Rate:", test_error_rate)
             print("  Average Training Time per Step:", average_time_per_step)
@@ -198,9 +190,9 @@ def train():
     tf_file_writer.close()
 
 # Clear the training directory
-#if tf.gfile.Exists(params.TRAIN_DIR):
-#    tf.gfile.DeleteRecursively(params.TRAIN_DIR)
-#tf.gfile.MakeDirs(params.TRAIN_DIR)
+if tf.gfile.Exists(params.TRAIN_DIR):
+    tf.gfile.DeleteRecursively(params.TRAIN_DIR)
+tf.gfile.MakeDirs(params.TRAIN_DIR)
 
 # Train the network
 train()
