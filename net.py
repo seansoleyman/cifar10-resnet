@@ -5,7 +5,7 @@ import tensorflow as tf
 import params
 
 """Create two sets of BN->relu->conv layers, as well as a shortcut. """
-def _residual_block(inputs, filters, training, stride=1):
+def _residual_block(inputs, filters, initializer, training, stride=1):
     bn1 = tf.layers.batch_normalization(
         inputs, 
         momentum=params.BN_MOMENTUM, 
@@ -19,6 +19,7 @@ def _residual_block(inputs, filters, training, stride=1):
         kernel_size=3, 
         strides=stride, 
         padding='same', 
+        kernel_initializer=initializer, 
         name='conv1')
     
     bn2 = tf.layers.batch_normalization(
@@ -33,6 +34,7 @@ def _residual_block(inputs, filters, training, stride=1):
         filters=filters, 
         kernel_size=3, 
         padding='same', 
+        kernel_initializer=initializer, 
         name='conv2')
     
     shortcut = inputs
@@ -44,6 +46,7 @@ def _residual_block(inputs, filters, training, stride=1):
             strides=stride, 
             kernel_regularizer=tf.contrib.layers.l2_regularizer(
                 params.SHORTCUT_L2_SCALE), 
+            kernel_initializer=initializer, 
             name='conv_shortcut')
     
     return tf.add(shortcut, conv2, name='add')
@@ -60,6 +63,7 @@ def inference(images, training):
     Returns:
         A tensor that evaluates scores for the CIFAR-10 classes. 
     """
+    initializer = tf.contrib.layers.variance_scaling_initializer()
 
     with tf.variable_scope('inference_model'):
     
@@ -69,6 +73,7 @@ def inference(images, training):
             filters=16 * params.WIDEN_FACTOR, 
             kernel_size=3, 
             padding='same', 
+            kernel_initializer = initializer,
             name='conv')
         
         # Stack n residual blocks with 16*WIDEN_FACTOR feature maps sized 32x32. 
@@ -77,25 +82,25 @@ def inference(images, training):
             filters = 16 * params.WIDEN_FACTOR
             for i in range(1, params.DEPTH+1):
                 with tf.variable_scope('block{}'.format(i)):
-                    block = _residual_block(block, filters, training)
+                    block = _residual_block(block, filters, initializer, training)
             
         # Stack n residual blocks with 32*WIDEN_FACTOR feature maps sized 16x16. 
         with tf.variable_scope('stack2'):
             filters *= 2
             with tf.variable_scope('block1'):
-                block = _residual_block(block, filters, training, stride=2)
+                block = _residual_block(block, filters, initializer, training, stride=2)
             for i in range(2, params.DEPTH+1):
                 with tf.variable_scope('block{}'.format(i)):
-                    block = _residual_block(block, filters, training)
+                    block = _residual_block(block, filters, initializer, training)
             
         # Stack n residual blocks with 64*WIDEN_FACTOR feature maps sized 8x8. 
         with tf.variable_scope('stack3'):
             filters *= 2
             with tf.variable_scope('block1'):
-                block = _residual_block(block, filters, training, stride=2)
+                block = _residual_block(block, filters, initializer, training, stride=2)
             for i in range(2, params.DEPTH+1):
                 with tf.variable_scope('block{}'.format(i)):
-                    block = _residual_block(block, filters, training)
+                    block = _residual_block(block, filters, initializer, training)
                     
         # Batch Normalization and Rectified Linear Unit layers. 
         bn_final = tf.layers.batch_normalization(
@@ -119,6 +124,7 @@ def inference(images, training):
         logits = tf.layers.dense(
             global_average_flat, 
             units=10, 
+            kernel_initializer = initializer,
             name='fully_connected')
 
     return logits
