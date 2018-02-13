@@ -9,8 +9,8 @@ NUM_TEST_EXAMPLES = 10000
 
 # Constants describing the training process.
 BATCH_SIZE = 128                    # Batch size. 
-LR_BOUNDARIES = [32000, 48000]      # Learning rate boundaries.
-LR_VALUES = [0.1, 0.01, 0.001]      # Learning rates.
+LR_BOUNDARIES = [400, 32000, 48000] # Learning rate boundaries.
+LR_VALUES = [0.01, 0.1, 0.01, 0.001]# Learning rates.
 MOMENTUM = 0.9                      # Momentum. 
 TRAIN_STEPS = 65000                 # Number of steps to run. 
 LOG_FREQUENCY = 1000                # How often to log results.
@@ -18,7 +18,7 @@ LOG_FREQUENCY = 1000                # How often to log results.
 # Network hyperparameters
 BN_MOMENTUM = 0.9                   # Decay rate for batch normalization.
 SHORTCUT_L2_SCALE = 0.0001          # Regularization for the skip connections. 
-DEPTH = 5                           # Residual units per stack. 
+DEPTH = 18                          # Residual units per stack. 
 WIDEN_FACTOR = 1                    # Scale up the number of feature maps.
 
 # Constants describing the input pipeline. 
