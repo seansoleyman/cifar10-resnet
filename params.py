@@ -18,7 +18,7 @@ LOG_FREQUENCY = 1000                # How often to log results.
 # Network hyperparameters
 BN_MOMENTUM = 0.9                   # Decay rate for batch normalization.
 SHORTCUT_L2_SCALE = 0.0001          # Regularization for the skip connections. 
-DEPTH = 3                           # Residual units per stack. 
+DEPTH = 5                           # Residual units per stack. 
 WIDEN_FACTOR = 1                    # Scale up the number of feature maps.
 
 # Constants describing the input pipeline. 
