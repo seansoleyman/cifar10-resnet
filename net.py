@@ -46,7 +46,7 @@ def _residual_block(inputs, filters, initializer, training, stride=1, first=Fals
     if first:
         shortcut = relu1
     if stride==2:
-        shortcut = tf.layers.average_pooling2d(shortcut, 1, 2)
+        shortcut = tf.layers.average_pooling2d(shortcut, 2, 2)
         pad = tf.zeros(tf.shape(shortcut), tf.float32, name='pad')
         shortcut = tf.concat([shortcut, pad], axis=3, name='concat')
     
