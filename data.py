@@ -48,14 +48,13 @@ def randomization_function(data, label):
     # Randomly flip the image horizontally.
     data = tf.image.random_flip_left_right(data)
     
-    # Scale values to range from 0.0 to 2.0 in float32 format.
-    data = tf.cast(data, tf.float32)/128.0
+    # Scale values to range from 0.0 to 1.0 in float32 format.
+    data = tf.cast(data, tf.float32)/255.0
     
     return data, label
 
 def standardization_function(data, label):
     """Scale values to range from 0.0 to 1.0 in float32 format. """
-    
     data = tf.cast(data, tf.float32)/255.0
     
     return data, label
