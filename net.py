@@ -5,12 +5,14 @@ import tensorflow as tf
 import params
 
 """Create two sets of BN->relu->conv layers, as well as a shortcut. """
-def _residual_block(inputs, filters, initializer, training, stride=1):
+def _residual_block(inputs, filters, initializer, training, stride=1, first=False):
+    assert(stride==1 or stride==2)
     bn1 = tf.layers.batch_normalization(
         inputs, 
         momentum=params.BN_MOMENTUM, 
         training=training, 
         fused=True, 
+        scale=False, 
         name='bn1')
     relu1 = tf.nn.relu(bn1, name='relu1')
     conv1 = tf.layers.conv2d(
@@ -20,6 +22,7 @@ def _residual_block(inputs, filters, initializer, training, stride=1):
         strides=stride, 
         padding='same', 
         kernel_initializer=initializer, 
+        use_bias=False, 
         name='conv1')
     
     bn2 = tf.layers.batch_normalization(
@@ -27,6 +30,7 @@ def _residual_block(inputs, filters, initializer, training, stride=1):
         momentum=params.BN_MOMENTUM, 
         training=training, 
         fused=True, 
+        scale=False, 
         name='bn2')
     relu2 = tf.nn.relu(bn2, name='relu2')
     conv2 = tf.layers.conv2d(
@@ -35,19 +39,16 @@ def _residual_block(inputs, filters, initializer, training, stride=1):
         kernel_size=3, 
         padding='same', 
         kernel_initializer=initializer, 
+        use_bias=False, 
         name='conv2')
     
     shortcut = inputs
-    if stride>1:
-        shortcut = tf.layers.conv2d(
-            inputs, 
-            filters=filters, 
-            kernel_size=1, 
-            strides=stride, 
-            kernel_regularizer=tf.contrib.layers.l2_regularizer(
-                params.SHORTCUT_L2_SCALE), 
-            kernel_initializer=initializer, 
-            name='conv_shortcut')
+    if first:
+        shortcut = relu1
+    if stride==2:
+        shortcut = tf.layers.average_pooling2d(shortcut, 1, 2)
+        pad = tf.zeros(tf.shape(shortcut), tf.float32, name='pad')
+        shortcut = tf.concat([shortcut, pad], axis=3, name='concat')
     
     return tf.add(shortcut, conv2, name='add')
 
@@ -74,13 +75,16 @@ def inference(images, training):
             kernel_size=3, 
             padding='same', 
             kernel_initializer = initializer,
+            use_bias=False, 
             name='conv')
         
         # Stack n residual blocks with 16*WIDEN_FACTOR feature maps sized 32x32. 
         with tf.variable_scope('stack1'):
             block = conv1
             filters = 16 * params.WIDEN_FACTOR
-            for i in range(1, params.DEPTH+1):
+            with tf.variable_scope('block1'):
+                block = _residual_block(block, filters, initializer, training, first=True)
+            for i in range(2, params.DEPTH+1):
                 with tf.variable_scope('block{}'.format(i)):
                     block = _residual_block(block, filters, initializer, training)
             
@@ -108,6 +112,7 @@ def inference(images, training):
             momentum=params.BN_MOMENTUM, 
             training=training, 
             fused=True, 
+            scale=False, 
             name='bn_final')
         relu_final = tf.nn.relu(bn_final, name='relu_final')
     
