@@ -40,7 +40,7 @@ def randomization_function(data, label):
     """Apply randomization and standardization to the dataset for training. """
     
     # Randomly crop a section of the image with padding of 4 pixels.
-    data = tf.pad(data, [[4,4],[4,4],[0,0]])
+    data = tf.pad(data, [[4,4],[4,4],[0,0]], mode='REFLECT')
     data = tf.random_crop(data, [params.IMAGE_SIZE, 
                                  params.IMAGE_SIZE, 
                                  params.CHANNELS])
