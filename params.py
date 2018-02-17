@@ -1,12 +1,12 @@
 """Constants and hyperparameters used by the cifar10 program. """
 
 # Constants describing the CIFAR-10 data set.
-IMAGE_SIZE = 32
-CHANNELS = 3
-NUM_CLASSES = 10
-NUM_TRAIN_CIFAR10 = 50000
-NUM_TRAIN_EXAMPLES = 50000
-NUM_TEST_EXAMPLES = 10000
+IMAGE_SIZE = 32                     # Width and height of CIFAR-10 images. 
+CHANNELS = 3                        # Number of color channels (RGB). 
+NUM_CLASSES = 10                    # Number of CIFAR-10 classes. 
+NUM_TRAIN_CIFAR10 = 50000           # Number of CIFAR-10 training instances. 
+NUM_TRAIN_EXAMPLES = 50000          # Number of CIFAR-10 test instances. 
+NUM_TEST_EXAMPLES = 10000           # Number of instances to use for training. 
 
 # Constants describing the training process.
 BATCH_SIZE = 128                    # Batch size. 
@@ -19,7 +19,7 @@ LOG_FREQUENCY = 1000                # How often to log results.
 # Network hyperparameters
 BN_MOMENTUM = 0.9                   # Decay rate for batch normalization.
 SHORTCUT_L2_SCALE = 0.0001          # Regularization for the skip connections. 
-DEPTH = 3                          # Residual units per stack. 
+DEPTH = 3                           # Residual units per stack. 
 WIDEN_FACTOR = 1                    # Scale up the number of feature maps.
 
 # Constants describing the input pipeline. 
