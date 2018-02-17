@@ -4,6 +4,7 @@
 IMAGE_SIZE = 32
 CHANNELS = 3
 NUM_CLASSES = 10
+NUM_TRAIN_CIFAR10 = 50000
 NUM_TRAIN_EXAMPLES = 50000
 NUM_TEST_EXAMPLES = 10000
 
@@ -18,11 +19,11 @@ LOG_FREQUENCY = 1000                # How often to log results.
 # Network hyperparameters
 BN_MOMENTUM = 0.9                   # Decay rate for batch normalization.
 SHORTCUT_L2_SCALE = 0.0001          # Regularization for the skip connections. 
-DEPTH = 18                          # Residual units per stack. 
+DEPTH = 3                          # Residual units per stack. 
 WIDEN_FACTOR = 1                    # Scale up the number of feature maps.
 
 # Constants describing the input pipeline. 
-SHUFFLE_BUFFER = 50000              # Buffer size for the shuffled dataset.
+SHUFFLE_BUFFER = NUM_TRAIN_EXAMPLES # Buffer size for the shuffled dataset.
 NUM_THREADS = 6                     # Number of threads for image processing. 
 OUTPUT_BUFFER_SIZE = BATCH_SIZE*2   # Buffer size for processed images. 
 TRAIN_OUTPUT_BUFFER = SHUFFLE_BUFFER//BATCH_SIZE # Train buffer size. 

@@ -21,13 +21,17 @@ class Cifar10():
             train_data_list.append(train_dict[b'data'])
             train_labels_list.append(train_dict[b'labels'])
         self.train_images = np.concatenate(train_data_list, 0)
-        self.train_images = self.train_images.reshape([50000,3,32,32])
+        self.train_images = self.train_images.reshape([params.NUM_TRAIN_CIFAR10,3,32,32])
         self.train_images = self.train_images.transpose([0,2,3,1])
         self.train_labels = np.concatenate(train_labels_list, 0)
+
+        # Use only a subset of the training instances. 
+        self.train_images = self.train_images[:params.NUM_TRAIN_EXAMPLES]
+        self.train_labels = self.train_labels[:params.NUM_TRAIN_EXAMPLES]
         
         test_dict = _unpickle(os.path.join(file_dir, 'test_batch'))
         self.test_images = np.array(test_dict[b'data'])
-        self.test_images = self.test_images.reshape([10000,3,32,32])
+        self.test_images = self.test_images.reshape([params.NUM_TEST_EXAMPLES,3,32,32])
         self.test_images = self.test_images.transpose([0,2,3,1])
         self.test_labels = np.array(test_dict[b'labels'])
 
