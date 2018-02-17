@@ -20,3 +20,4 @@ def total_loss(logits, labels):
             tf.summary.scalar(l.op.name, l)
       
         return total_loss
+

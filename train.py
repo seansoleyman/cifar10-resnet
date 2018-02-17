@@ -196,3 +196,4 @@ tf.gfile.MakeDirs(params.TRAIN_DIR)
 
 # Train the network
 train()
+
